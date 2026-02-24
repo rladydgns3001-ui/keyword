@@ -1,0 +1,43 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      "functions/**",
+      "node_modules/**",
+      ".git/**",
+      ".claude/**",
+      ".idx/**",
+      "*.md",
+      "*.log",
+      "*.zip"
+    ],
+    "rewrites": [
+      {
+        "source": "/api/news",
+        "function": "news"
+      },
+      {
+        "source": "/api/trends",
+        "function": "trends"
+      },
+      {
+        "source": "/api/keywords",
+        "function": "keywords"
+      },
+      {
+        "source": "/api/related",
+        "function": "related"
+      },
+      {
+        "source": "/api/auto-analyze",
+        "function": "autoAnalyze"
+      }
+    ]
+  },
+  "functions": {
+    "source": "functions",
+    "runtime": "nodejs20"
+  }
+}
