@@ -96,6 +96,19 @@ const INTENT_SCORE_MAP = {
   "시세": 65, "전망": 42, "매물": 55, "실거래가": 70, "가격": 60,
   "시세 조회": 75, "실거래가 조회": 78, "청약 일정": 72, "분양 일정": 70,
   "차트": 50, "투자 방법": 65, "실시간 시세": 72, "전망 분석": 55, "투자 후기": 58,
+  // 축제/여행
+  "일정": 60, "장소": 55, "프로그램": 50, "셔틀버스": 62, "교통편": 58, "맛집": 55,
+  // 자동차
+  "가격 비교": 75, "충전소": 68, "보험료 비교": 78, "보조금 신청": 88,
+  // 복지 대상
+  "혜택": 65, "지원 대상": 70, "서류 준비": 72, "상담 전화번호": 68,
+  "필요 서류": 72,
+  // 연금/보험
+  "수령액": 78, "수령 나이": 75, "납부 확인": 72, "예상 수령액": 80,
+  "임의가입": 65, "수령액 조회": 82, "납부 내역 조회": 78,
+  "보험료 조회": 80, "피부양자": 65, "보험료 계산기": 85,
+  // 교육
+  "문의 전화": 60,
 };
 
 const CPC_SCORE_MAP = {
@@ -122,12 +135,17 @@ const EVERGREEN_KEYWORDS = ["신청", "방법", "계산기", "비교", "추천",
 app.get("/api/auto-analyze", async (req, res) => {
   try {
     const categories = [
+      // 일반 카테고리
       { id: "economy", query: "경제", name: "경제" },
-      { id: "politics", query: "정치", name: "정치" },
       { id: "society", query: "사회", name: "사회" },
-      { id: "it", query: "IT 기술", name: "IT/과학" },
       { id: "life", query: "생활 문화", name: "생활/문화" },
-      { id: "world", query: "세계 국제", name: "세계" },
+      // 수익화 높은 특화 쿼리
+      { id: "subsidy", query: "지원금 신청", name: "지원금" },
+      { id: "health", query: "건강 질환 치료", name: "건강" },
+      { id: "realestate", query: "아파트 분양 청약", name: "부동산" },
+      { id: "finance", query: "대출 금리 보험", name: "금융" },
+      { id: "travel", query: "축제 여행 관광", name: "여행" },
+      { id: "welfare", query: "복지 수당 급여", name: "복지" },
     ];
 
     const newsItems = [];
@@ -302,6 +320,36 @@ const TOPIC_SPECIFIC_SUFFIXES = {
     match: ["특례보증", "신용보증", "보증서"],
     derivatives: ["신청방법", "자격조건", "한도", "금리", "필요 서류"],
     thirdLevel: ["온라인 신청", "신청 홈페이지", "상담 전화번호"],
+  },
+  festival: {
+    match: ["축제", "엑스포", "박람회", "마라톤", "불꽃축제"],
+    derivatives: ["일정", "장소", "주차장", "프로그램", "입장료"],
+    thirdLevel: ["셔틀버스", "맛집", "숙소 추천", "교통편"],
+  },
+  vehicle: {
+    match: ["전기차", "하이브리드", "자동차보험", "자동차세"],
+    derivatives: ["보조금", "신청방법", "가격 비교", "추천", "세금"],
+    thirdLevel: ["보조금 신청", "충전소", "보험료 비교"],
+  },
+  welfare_target: {
+    match: ["다문화", "한부모", "장애인", "차상위", "기초수급"],
+    derivatives: ["지원금", "혜택", "자격조건", "신청방법", "지원 대상"],
+    thirdLevel: ["온라인 신청", "서류 준비", "상담 전화번호"],
+  },
+  pension: {
+    match: ["국민연금", "기초연금", "공무원연금"],
+    derivatives: ["수령액", "수령 나이", "납부 확인", "예상 수령액", "계산기", "임의가입"],
+    thirdLevel: ["수령액 조회", "납부 내역 조회", "고객센터"],
+  },
+  healthInsurance: {
+    match: ["건강보험", "실손보험", "자동차보험"],
+    derivatives: ["신청방법", "자격조건", "보험료 조회", "환급", "피부양자"],
+    thirdLevel: ["보험료 계산기", "고객센터", "납부 확인"],
+  },
+  scholarship: {
+    match: ["장학금", "학자금", "등록금"],
+    derivatives: ["신청방법", "자격조건", "신청기간", "지원 대상", "금액"],
+    thirdLevel: ["온라인 신청", "서류 준비", "문의 전화"],
   },
 };
 
@@ -537,9 +585,25 @@ const HIGH_VALUE_TOPICS = [
   // 임대/주거
   { keywords: ["임대주택", "공공주택", "행복주택", "장기전세", "매입임대"], topic: null },
   // 교육/장학
-  { keywords: ["장학금", "학자금", "등록금", "교육비"], topic: null },
+  { keywords: ["장학금", "학자금", "등록금", "교육비", "교육급여"], topic: null },
   // 노동/일자리
-  { keywords: ["일자리", "구직급여", "실업자", "취업성공패키지"], topic: null },
+  { keywords: ["일자리", "구직급여", "취업성공패키지", "직업훈련"], topic: null },
+  // 자동차/교통
+  { keywords: ["전기차", "하이브리드", "자동차보험", "운전면허", "자동차세"], topic: null },
+  // 정부 서비스
+  { keywords: ["여권", "주민등록", "인감증명", "등기"], topic: null },
+  // 복지 대상
+  { keywords: ["다문화", "한부모", "장애인", "차상위", "기초수급"], topic: null },
+  { keywords: ["노인돌봄", "요양보험", "장기요양", "노인일자리"], topic: null },
+  { keywords: ["출산급여", "출산장려금", "육아휴직", "아동수당"], topic: null },
+  // 건강 추가
+  { keywords: ["건강검진", "종합검진", "암검진", "대장내시경", "위내시경"], topic: null },
+  { keywords: ["탈모치료", "비만클리닉", "피부과", "성형외과", "치과"], topic: null },
+  // 이벤트/축제
+  { keywords: ["엑스포", "박람회", "마라톤", "불꽃축제"], topic: null },
+  // 생활 서비스
+  { keywords: ["이사비용", "인테리어", "입주청소", "에어컨청소"], topic: null },
+  { keywords: ["반려동물", "동물병원", "펫보험", "애견호텔"], topic: null },
 ];
 
 // 뉴스에서만 쓰이는 서술/수식 단어 (제거 대상)
@@ -635,6 +699,10 @@ function extractKeyword(title, description) {
     "체결", "분석", "지원", "경계", "맞춤", "독자", "기존", "산업",
     "목소리", "피켓", "로드맵", "활성화", "홍보", "개발", "설계",
     "전통", "역사", "동행", "나눔", "희망", "지역", "시민", "주민",
+    "대응책", "흐름", "연속", "달성", "총력전", "대상", "수상",
+    "생태계", "경고등", "리스크", "내수면", "양식어가", "양식어",
+    "관광객", "여행객", "방문객", "이용객", "입주량",
+    "맞손", "외친", "총력", "추진단", "공식화",
   ]);
   const finalWords = cleaned.filter(w => !abstractNouns.has(w));
 
@@ -669,8 +737,8 @@ function findHighValueTopic(text) {
   for (const hvt of HIGH_VALUE_TOPICS) {
     for (const kw of hvt.keywords) {
       if (text.includes(kw)) {
-        // 3글자 미만 키워드는 단독 사용 불가 → 앞뒤 맥락에 의미 보충어 필요
-        if (kw.replace(/\s/g, "").length < 3) continue;
+        // 한글 2글자는 허용 (환율, 금리, 보험 등), 비한글 2글자 이하는 스킵 (AI 등 너무 제네릭)
+        if (kw.replace(/\s/g, "").length < 3 && !/^[가-힣]{2,}$/.test(kw)) continue;
 
         // 해당 키워드 앞뒤 맥락에서 수식어 찾기
         const contextTopic = extractContextAround(text, kw);
@@ -692,16 +760,19 @@ function findHighValueTopic(text) {
  *   → "병원" 패턴 매칭 → "힘찬병원" 추출
  */
 const DOMAIN_SUFFIX_PATTERNS = [
-  // 복지/지원 시설 (구체적 복지 시설명만 — "아트센터", "스포츠센터" 등 제외)
+  // 복지/지원 시설 (구체적 복지 시설명만)
   { suffix: /([가-힣]{2,}(?:복지관|복지센터|안심센터|지원센터|보건소|보건센터|고용센터|일자리센터))/, category: "subsidy" },
-  { suffix: /([가-힣]{2,}(?:지원금|보조금|장려금|바우처))/, category: "subsidy" },
+  { suffix: /([가-힣]{2,}(?:지원금|보조금|장려금|바우처|지원사업))/, category: "subsidy" },
+  { suffix: /([가-힣]{2,}(?:수당|급여|연금))/, category: "subsidy" },
   // 건강/의료
-  { suffix: /([가-힣]{2,}(?:병원|의원|약국|한의원|치과))/, category: "health" },
-  { suffix: /([가-힣]{2,}(?:증상|증후군|질환|감염증))/, category: "health" },
+  { suffix: /([가-힣]{2,}(?:병원|의원|약국|한의원|치과|클리닉))/, category: "health" },
+  { suffix: /([가-힣]{2,}(?:증상|증후군|질환|감염증|검진))/, category: "health" },
   // 금융
-  { suffix: /([가-힣]{2,}(?:대출|적금|보험|보증))/, category: "finance" },
+  { suffix: /([가-힣]{2,}(?:대출|적금|보험|보증|금리))/, category: "finance" },
   // 부동산
   { suffix: /([가-힣]{2,}(?:아파트|청약|분양|임대주택|공공주택))/, category: "realestate" },
+  // 여행/축제
+  { suffix: /([가-힣]{2,}(?:축제|엑스포|박람회))/, category: "travel" },
   // 상품/서비스
   { suffix: /([가-힣]{2,}(?:상품권))/, category: "app" },
 ];
@@ -747,7 +818,8 @@ function extractContextAround(text, keyword) {
     const firstWord = afterWords[0];
     // 매우 제한적인 보충어만 허용
     const allowedSuffixes = ["금리", "전망", "시세", "가격", "대출", "보험",
-      "증상", "치료", "예방", "접종", "지원", "신청", "확대", "인상", "인하", "동결"];
+      "증상", "치료", "예방", "접종", "지원", "신청", "확대", "인상", "인하", "동결",
+      "관광", "여행", "축제", "검진", "수당", "급여", "보조금"];
     if (allowedSuffixes.includes(firstWord)) {
       const combined = `${keyword} ${firstWord}`;
       if (combined.length <= 12) return combined;
@@ -820,35 +892,48 @@ function isLowSearchValue(topic) {
  * - 서비스: 상품권, 요금, 결제, 구독
  */
 function isMonetizableTopic(topic, title) {
-  // ★ 핵심: 토픽 자체에 수익화 도메인 키워드가 포함되어야 함
-  //    뉴스 제목(title)은 참고하지 않음 → 제목의 컨텍스트 오염 방지
-
-  // 인물 직함으로 끝나면 → 수익화 불가 (인사 뉴스)
+  // 인물 직함으로 끝나면 → 수익화 불가
   if (/(?:원장|사장|회장|대표|교수|위원장|장관|총장|감독|국장|처장|실장|부장|사무국장|기자단|기자)$/.test(topic)) return false;
-
-  // "의원" 동음이의어 처리: 지역명+의원 = 국회/지방의원(정치인), 과명+의원 = 병원
-  // 정치인 의원은 수익화 불가
+  // 정치인 의원
   if (/(?:도의원|시의원|구의원|군의원|국회의원)/.test(topic)) return false;
 
-  // 복지/지원 시설·서비스 (구체적 복지 시설만 — "아트센터", "스포츠센터" 등 제외)
+  // ── 1차: 토픽 자체에 수익화 키워드가 있으면 즉시 허용 ──
+
+  // 복지/지원
   if (/복지센터|안심센터|지원센터|보건센터|고용센터|일자리센터|돌봄센터|건강센터/.test(topic)) return true;
   if (/복지관|복지|보건소|지원금|보조금|수당|급여|바우처|장려금|보험료|실업급여/.test(topic)) return true;
-  if (/돌봄|보육|어린이집|유치원/.test(topic)) return true;
+  if (/돌봄|보육|어린이집|유치원|다문화|한부모|장애인|차상위/.test(topic)) return true;
 
-  // 건강 (질환/증상/병원/치료)
-  if (/증상|질환|치료|장애|감염|접종|수술|재활|병원|약국|백신/.test(topic)) return true;
+  // 건강
+  if (/증상|질환|치료|장애|감염|접종|수술|재활|병원|약국|백신|검진|클리닉/.test(topic)) return true;
 
-  // 금융상품
-  if (/대출|보험|연금|적금|금리|세금|환급|이자|환율/.test(topic)) return true;
+  // 금융
+  if (/대출|보험|연금|적금|금리|세금|환급|이자|환율|보증/.test(topic)) return true;
 
-  // 투자 (구체적 상품명만)
+  // 투자
   if (/주식|코인|비트코인|이더리움|코스피|코스닥|ETF|펀드/.test(topic)) return true;
 
   // 생활 서비스
-  if (/상품권|요금|결제/.test(topic)) return true;
+  if (/상품권|요금|결제|전기차|자동차|운전면허/.test(topic)) return true;
 
   // 부동산
-  if (/분양|청약|재건축|재개발|전세|월세|아파트/.test(topic)) return true;
+  if (/분양|청약|재건축|재개발|전세|월세|아파트|임대주택/.test(topic)) return true;
+
+  // 여행/축제
+  if (/축제|엑스포|박람회|관광|여행/.test(topic)) return true;
+
+  // 교육
+  if (/장학금|학자금|등록금|수능|자격증/.test(topic)) return true;
+
+  // ── 2차: 토픽은 일반적이지만 제목에 수익화 컨텍스트가 명확한 경우 ──
+  const titleCheck = topic + " " + title;
+  if (/지원금|보조금|장려금|수당 지급|급여 인상|연금 인상|연금 개혁/.test(titleCheck)) return true;
+  if (/대출 금리|금리 인하|금리 인상|금리 동결/.test(titleCheck)) return true;
+  if (/분양 일정|청약 접수|입주 물량|입주량/.test(titleCheck)) return true;
+  if (/축제 개막|축제 개최|관광객|여행객/.test(titleCheck)) return true;
+  if (/건강검진|종합검진|암검진|무료 검진/.test(titleCheck)) return true;
+  if (/전기차 보조금|자동차세|자동차 리콜/.test(titleCheck)) return true;
+  if (/지원 사업|지원사업/.test(titleCheck)) return true;
 
   return false;
 }
@@ -859,13 +944,15 @@ function detectCategory(text, topicOnly) {
   if (topicOnly) {
     const topicLower = topicOnly.toLowerCase();
     const topicMap = {
-      finance: ["대출", "보험", "연금", "금리", "환율", "세금", "지방세", "양도세", "소득세", "부동산",
+      finance: ["대출", "금리", "환율", "세금", "지방세", "양도세", "소득세", "사모대출",
                 "비트코인", "이더리움", "코인", "주식", "코스피", "ETF", "펀드", "적금", "예금"],
-      subsidy: ["지원금", "보조금", "수당", "바우처", "장려금", "복지", "복지관", "실업급여", "고용보험"],
-      health: ["증상", "질환", "치료", "병원", "약국", "접종", "백신", "수술", "재활"],
+      subsidy: ["지원금", "보조금", "수당", "바우처", "장려금", "복지", "복지관", "실업급여", "고용보험",
+                "국민연금", "기초연금", "건강보험", "장학금", "학자금", "등록금",
+                "보험", "연금", "다문화", "한부모", "장애인", "차상위", "보육"],
+      health: ["증상", "질환", "치료", "병원", "약국", "접종", "백신", "수술", "재활", "검진", "클리닉"],
       app: ["카카오", "네이버", "쿠팡", "토스", "배달의민족", "당근마켓"],
-      travel: ["여행", "관광", "축제", "맛집", "호텔"],
-      realestate: ["아파트", "분양", "청약", "전세", "월세", "임대주택", "재건축", "재개발"],
+      travel: ["여행", "관광", "축제", "맛집", "호텔", "엑스포", "박람회"],
+      realestate: ["아파트", "분양", "청약", "전세", "월세", "임대주택", "재건축", "재개발", "부동산"],
     };
     for (const [cat, kws] of Object.entries(topicMap)) {
       if (kws.some(k => topicLower.includes(k.toLowerCase()))) return cat;
